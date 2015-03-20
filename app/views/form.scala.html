@@ -1,0 +1,33 @@
+@(expForm: Form[ExpSettings])
+
+@import helper._
+@import helper.twitterBootstrap._
+
+@main("Add Stock") {
+    <h2>Start experiment</h2>
+    @helper.form(action = routes.Application.runExp, 'class->"form-inline") {
+
+    @inputText(
+        expForm("dataSize"),
+        '_label -> "Data Size",
+        'class -> "control-label"
+    )
+
+    @inputText(
+        expForm("clusterSize"),
+        '_label -> "Cluster Size",
+        'class -> "control-label"
+    )
+
+    @inputText(
+        expForm("noIteration"),
+        '_label -> "No of Iteration",
+        'class -> "control-label"
+    )
+
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="Run Experiment">
+        <a href="@routes.Application.index" class="btn">Cancel</a>
+    </div>
+    }
+}

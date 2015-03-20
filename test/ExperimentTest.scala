@@ -1,6 +1,5 @@
 import breeze.linalg.{DenseVector => Vec}
-import controllers.Experiment
-import models.{ExpResultPerRun, ExpVariable, ExpSettingPerRun, ExpSettings}
+import models._
 import models.VariableType._
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.scalatest.{FlatSpec, MustMatchers, PrivateMethodTester}
@@ -32,9 +31,9 @@ class ExperimentTest extends FlatSpec with MustMatchers with PrivateMethodTester
 
     val exp = ExpSettingPerRun(Set(dataSizeVar, clusterSizeVar, noIterationVar))
 
-    //val runANN = PrivateMethod[ExpResultPerRun]('runANN)
-    //val result = Experiment invokePrivate runANN(exp)
-    val result = Experiment.runANN(exp)
+    val runANN = PrivateMethod[ExpResultPerRun]('runANN)
+    val result = Experiment invokePrivate runANN(exp)
+
     assert(result.timeUsed > 200)
   }
 
@@ -48,5 +47,16 @@ class ExperimentTest extends FlatSpec with MustMatchers with PrivateMethodTester
     val runSVM = PrivateMethod[ExpResultPerRun]('runSVM)
     val result = Experiment invokePrivate runSVM(exp)
     assert(result.timeUsed > 200)
+  }
+
+  it should "produce Set of results when experimentResult is invoked" in {
+    val expSettings = ExpSettings("10, 20, 30", "10", "10")
+
+    val results = Experiment.experimentResult(expSettings)
+
+    assert(results.size == 6)
+    assert(results.filter(e => e.dataSize == 10).size == 2)
+    assert(results.filter(e => e.dataSize == 20).size == 2)
+    assert(results.filter(e => e.dataSize == 30).size == 2)
   }
 }

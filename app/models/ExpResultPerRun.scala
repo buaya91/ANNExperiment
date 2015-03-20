@@ -8,3 +8,5 @@ case class ExpResultPerRun(setting: ExpSettingPerRun, algorithm: String, timeUse
   val clusterSize = setting("ClusterSize")
   val noIteration = setting("NoIteration")
 }
+
+

@@ -1,0 +1,46 @@
+@(results: Seq[ExpResultPerRun])(allowSave: Boolean)
+
+@import helper._
+
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    @helper.form(action = routes.Application.saveResults, 'class->"form-inline") {
+        <table>
+        <tr>
+            <th>Data Size</th>
+            <th>Cluster Size</th>
+            <th>No of Iteration</th>
+            <th>Algorithm</th>
+            <th>Time used (milli-sec)</th>
+        </tr>
+        @results.map { result =>
+        <tr>
+            <td>@result.dataSize</td>
+            <td>@result.clusterSize</td>
+            <td>@result.noIteration</td>
+            <td>@result.algorithm</td>
+            <td>@result.timeUsed</td>
+        </tr>
+        }
+    </table>
+        @results.map { result =>
+            <input type="hidden" name="DataSize[]" value="@result.dataSize">
+            <input type="hidden" name="ClusterSize[]" value="@result.clusterSize">
+            <input type="hidden" name="NoIteration[]" value="@result.noIteration">
+            <input type="hidden" name="Algorithm[]" value="@result.algorithm">
+            <input type="hidden" name="TimeUsed[]" value="@result.timeUsed">
+        }
+        <div class="form-actions">
+            @if(allowSave == true) {
+                <input type="submit" class="btn btn-primary" value="Save results">
+            }
+            <a href="@routes.Application.index" class="btn">Back</a>
+        </div>
+    }
+</body>
+</html>

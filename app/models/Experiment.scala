@@ -1,18 +1,25 @@
-package controllers
+package models
 
 import breeze.linalg.{DenseVector => Vec}
-import models._
 import org.apache.spark.mllib.classification.SVMWithSGD
-import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.{SparkConf, SparkContext}
 
+import orm.ExperimentResults
 import models.ExpStatus._
 
-case object Experiment {
+import scala.slick.driver.H2Driver.simple._
+import scala.slick.jdbc.meta.MTable
+import scala.slick.lifted.TableQuery
+
+object Experiment {
 
   var status = NotRunning
   val conf = new SparkConf().setAppName("ANN Experiment").setMaster("local[*]")
+
+  val resultsTable = TableQuery[ExperimentResults]
+  val db = Database.forURL("jdbc:h2:file:data/experiment", driver = "org.h2.Driver")
 
   //return time used to run experiment using
   def experimentResult(expSettings: ExpSettings): Seq[ExpResultPerRun] = {
@@ -28,7 +35,37 @@ case object Experiment {
     results
   }
 
-  def runANN(setting: ExpSettingPerRun): ExpResultPerRun = {
+  def saveResults(results: ExpResults) = {
+    db.withSession { implicit session =>
+      if (MTable.getTables("experiment").list(session).isEmpty)
+        resultsTable.ddl.create
+
+      results.list foreach {
+        r => resultsTable += (System.currentTimeMillis(), r.dataSize, r.clusterSize, r.noIteration, r.algorithm, r.timeUsed)
+      }
+    }
+  }
+
+  def getAllResults: Seq[ExpResultPerRun] = {
+    db.withSession { implicit session =>
+      val dataSizes = resultsTable.map(p => p.dataSize).run
+      val clusterSizes = resultsTable.map(p => p.clusterSize).run
+      val noIterations = resultsTable.map(p => p.noIteration).run
+      val algorithms = resultsTable.map(p => p.algorithm).run
+      val timeUseds = resultsTable.map(p => p.timeUsed).run
+      return ExpResults(dataSizes, clusterSizes, noIterations, algorithms, timeUseds).list
+    }
+  }
+
+  implicit def seqIntToString(s: Seq[Int]): Seq[String] = {
+    s map (_.toString)
+  }
+
+  implicit def seqLongToString(s: Seq[Long]): Seq[String] = {
+    s map (_.toString)
+  }
+
+  private def runANN(setting: ExpSettingPerRun): ExpResultPerRun = {
     val neuralNetwork = ANN(Seq(2,4,5,2))
     val dataSize = setting("DataSize")
     val clusterSize = setting("ClusterSize")

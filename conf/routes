@@ -4,6 +4,11 @@
 
 # Home page
 GET     /                           controllers.Application.index
+GET     /exp/set                    controllers.Application.setExp
+POST    /exp/run                    controllers.Application.runExp
+POST    /exp/save                   controllers.Application.saveResults
+GET     /exp/show                   controllers.Application.showAll
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
